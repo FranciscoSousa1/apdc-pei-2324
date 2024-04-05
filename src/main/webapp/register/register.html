@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+<meta http-equiv="content-type"
+	content="application/xhtml+xml; charset=UTF-8" />
+<title>Sign in</title>
+</head>
+
+<body>
+	<img src="nova.png"
+		style="position: absolute; left: 975px; top: -40px;">
+	<h1 style="text-align: center;">Sign in</h1>
+	<h2 style="text-align: center;">These forms must be filled in
+		order for you to get registered.</h2>
+	<p>
+		Enter username: <input type="text" id="usernameInput"
+			name="usernameInput" value=""> <font color="red">(Username
+			must not contain any special character and have a set of lower case
+			characters and then a set of numbers.)</font>
+	</p>
+	<p>
+		Enter email: <input type="text" id="emailInput" name="emailInput"
+			value=""> <font color="red">(Email must be a set of
+			letters, then the special character @, then letters that can be
+			separated by an . (optional) and finally .domain) </font>
+	</p>
+	<p>
+		Enter name: <input type="text" id="nameInput" name="nameInput"
+			value=""> <font color="red">(Name must be a Upper-case
+			letter following by a set of lower-case letters and the names and the
+			surnames must be separated by having one space between them.)</font>
+	</p>
+	<p>
+		Enter telephone: <input type="text" id="telephoneInput"
+			name="telephoneInput" value=""> <font color="red">(Telephone
+			must be the international access code following by 9 numbers) </font>
+	</p>
+	<p>
+		Enter password: <input type="password" id="passwordInput"
+			name="passwordInput" value=""> <font color="red">(Password
+			must have at least one lower letter or one capital letter, and one
+			number and have at least length 5.) </font>
+	</p>
+	<p>
+		Enter confirmation: <input type="password" id="confirmationPassword"
+			name="passwordInput" value=""> <font color="red">(You
+			must confirm the password above and follow its rules.) </font>
+	</p>
+	<h3 style="text-align: center">Forms above are optional, you can
+		add the info later.</h3>
+	<p>Select profile visibility:</p>
+	 <input name="visibility" type="radio" id="public" name="public" value="Public">Public
+	<input name = "visibility" type = "radio" id="private" name="private" value="Private">Private
+	<p>
+		Enter ocupation: <input type="text" id="ocupationInput"
+			name="ocupationInput" value="">
+	</p>
+	<p>
+		Enter workplace: <input type="text" id="workplaceInput"
+			name="workplaceInput" value="">
+	</p>
+	<p>
+		Enter address: <input type="text" id="addressInput"
+			name="addressInput" value="">
+	</p>
+	<p>
+		Enter postalCode: <input type="text" id="postalCodeInput"
+			name="postalCodeInput" value=""> <font color="red">(If this field is filled, Postal Code must be 4 numbers followed by an - and 3 other numbers.) </font>
+	</p>
+	<p>
+		Enter taxIdentification: <input type="text"
+			id="taxIdentificationInput" name="taxIdentificationInput" value=""><font color="red">(If this field is filled, Tax Identification must be 9 numbers.) </font>
+	</p>
+	<button type="button" id="signInButton" name="signInButton">Sign
+		in</button>
+	<p id="registerSuccesfulOrErrorId"></p>
+</body>
+<script>
+	window.onload = function() {
+		var publicVisibility = document.getElementById("public");
+		var privateVisibility = document.getElementById("private");
+		var button = document.getElementById("signInButton");
+		console.log("Entering function...");
+		button.onclick = function() {
+			console.log("Entered in the function...");
+			console.log("Creating the request and Getting Values");
+			var xmlhttp = new XMLHttpRequest();
+			var username = document.getElementById("usernameInput").value;
+			var email = document.getElementById("emailInput").value;
+			var name = document.getElementById("nameInput").value;
+			var telephone = document.getElementById("telephoneInput").value;
+			var password = document.getElementById("passwordInput").value;
+			var confirmation = document.getElementById("confirmationPassword").value;
+			var visibility = document.getElementById("public").checked ? "Public"
+					: document.getElementById("private").checked ? "Private"
+							: "";
+			var ocupation = document.getElementById("ocupationInput").value;
+			var workplace = document.getElementById("workplaceInput").value;
+			var address = document.getElementById("addressInput").value;
+			var postalCode = document.getElementById("postalCodeInput").value;
+			var taxIdentification = document
+					.getElementById("taxIdentificationInput").value;
+			var url = "https://clever-bit-416009.oa.r.appspot.com/rest/register/v2";
+			console.log("doing onState");
+			xmlhttp.open("POST", url, true);
+			xmlhttp.setRequestHeader("Content-Type",
+					"application/json;charset=UTF-8");
+			xmlhttp.onreadystatechange = function() {
+				var registerStatus = document
+						.getElementById("registerSuccesfulOrErrorId");
+				if (this.readyState == 4 && this.status == 200) {
+					registerStatus.style.color = "green";
+					registerStatus.innerHTML = "Register succesful!";
+					setTimeout(
+							function() {
+								window.location
+										.replace("https://clever-bit-416009.oa.r.appspot.com/index.html");
+							}, 3000);
+				} else {
+					if (xmlhttp.status == "400") {
+						registerStatus.style.color = "red";
+						registerStatus.innerHTML = "ERROR 400 BAD REQUEST"
+					} 
+					if (xmlhttp.status == "403") {
+						registerStatus.style.color = "red";
+						registerStatus.innerHTML = "ERROR 403 FORBIDDEN";
+					}
+				}
+			};
+			console.log("POST!");
+			xmlhttp.send(JSON.stringify({
+				"username" : username,
+				"email" : email,
+				"name" : name,
+				"telephone" : telephone,
+				"password" : password,
+				"confirmation" : confirmation,
+				"visibility" : visibility,
+				"ocupation" : ocupation,
+				"workplace" : workplace,
+				"address" : address,
+				"postalCode" : postalCode,
+				"taxIdentification" : taxIdentification,
+				"role" : "User",
+				"state" : "INACTIVE"
+			}));
+			console.log("Data sent!");
+		}
+	}
+</script>
+<footer> Copyright: FCT NOVA 2023 </footer>
+</html>

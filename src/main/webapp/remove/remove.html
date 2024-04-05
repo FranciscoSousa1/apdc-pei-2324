@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+<meta http-equiv="content-type"
+	content="application/xhtml+xml; charset=UTF-8" />
+<title>Remove User</title>
+</head>
+
+<body>
+	<img src="nova.png"
+		style="position: absolute; left: 975px; top: -40px;">
+	<h1 style="text-align: center;">Remove User</h1>
+	<p>
+		Enter username of desired user: <input type="text" id="usernameInput"
+			name="usernameInput" value="">
+	</p>
+	<button id="removeButton">Remove</button>
+	<p id="removeOrErrorId"></p>
+</body>
+<script>
+	window.onload = function() {
+		var button = document.getElementById("removeButton");
+		button.onclick = function() {
+			var xmlhttp = new XMLHttpRequest();
+			var username = document.getElementById("usernameInput").value;
+			var password = document.getElementById("passwordInput").value;
+			var url = "https://clever-bit-416009.oa.r.appspot.com/rest/remove/v2";
+			xmlhttp.open("POST", url, true);
+			xmlhttp.setRequestHeader("Content-Type",
+					"application/json;charset=UTF-8");
+			xmlhttp.onreadystatechange = function() {
+				var registerStatus = document
+						.getElementById("removeOrErrorId");
+				if (this.readyState == 4 && this.status == 200) {
+					registerStatus.style.color = "green";
+					registerStatus.innerHTML = "Succesful Remove!";
+					setTimeout(
+							function() {
+								registerStatus.innerHTML = "";
+							}, 3000);
+				} else {
+					if (xmlhttp.status == "403") {
+						registerStatus.style.color = "red";
+						registerStatus.innerHTML = "The fields you put don't check with any of the users registered.";
+					}
+					if (xmlhttp.status == "406") {
+						registerStatus.style.color = "red";
+						registerStatus.innerHTML = "You don't have permissions to delete this user.";
+					}
+				}
+			};
+			console.log("POST!");
+			xmlhttp.send(JSON.stringify({
+				"username" : username,
+				"password" : password
+			}));
+		}
+	}
+</script>
+<footer> Copyright: FCT NOVA 2023 </footer>
+</html>

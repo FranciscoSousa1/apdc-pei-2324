@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+<meta http-equiv="content-type"
+	content="application/xhtml+xml; charset=UTF-8" />
+<title>Login</title>
+</head>
+
+<body>
+	<img src="nova.png"
+		style="position: absolute; left: 975px; top: -40px;">
+	<h1 style="text-align: center;">Login</h1>
+	<p>
+		Enter username: <input type="text" id="usernameInput"
+			name="usernameInput" value="">
+	</p>
+	<p>
+		Enter password: <input type="password" id="passwordInput"
+			name="passwordInput" value="">
+	</p>
+	<button id="loginButton">Login</button>
+	<p id="loginSuccesfulOrErrorId"></p>
+</body>
+<script>
+	window.onload = function() {
+		var button = document.getElementById("loginButton");
+		button.onclick = function() {
+			var xmlhttp = new XMLHttpRequest();
+			var username = document.getElementById("usernameInput").value;
+			var password = document.getElementById("passwordInput").value;
+			var url = "https://clever-bit-416009.oa.r.appspot.com/rest/login/v2";
+			xmlhttp.open("POST", url, true);
+			xmlhttp.setRequestHeader("Content-Type",
+					"application/json;charset=UTF-8");
+			xmlhttp.onreadystatechange = function() {
+				var registerStatus = document
+						.getElementById("loginSuccesfulOrErrorId");
+				if (this.readyState == 4 && this.status == 200) {
+					registerStatus.style.color = "green";
+					registerStatus.innerHTML = "Login succesful!";
+					setTimeout(
+							function() {
+								window.location
+										.replace("https://clever-bit-416009.oa.r.appspot.com/profile/profile.html");
+							}, 3000);
+				} else {
+					if (xmlhttp.status == "400") {
+						registerStatus.style.color = "red";
+						registerStatus.innerHTML = "ERROR 400 BAD REQUEST";
+					}
+					if (xmlhttp.status == "403") {
+						registerStatus.style.color = "red";
+						registerStatus.innerHTML = "ERROR 403 FORBIDDEN";
+					}
+					if (xmlhttp.status == "406") {
+						registerStatus.style.color = "red";
+						registerStatus.innerHTML = "ERROR 406 NOT ACCEPTABLE";
+					}
+				}
+			};
+			console.log("POST!");
+			xmlhttp.send(JSON.stringify({
+				"username" : username,
+				"password" : password
+			}));
+		}
+	}
+</script>
+<footer> Copyright: FCT NOVA 2023 </footer>
+</html>

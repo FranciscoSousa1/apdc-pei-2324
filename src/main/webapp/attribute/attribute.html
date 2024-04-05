@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+<meta http-equiv="content-type"
+	content="application/xhtml+xml; charset=UTF-8" />
+<title>Change Attributes</title>
+</head>
+
+<body>
+		<h1 style="text-align: center;">Change Attributes of User</h1>
+	<img src="nova.png"
+		style="position: absolute; left: 975px; top: 40px; height: 180px;">
+				<br><br>
+		<p>Enter the username of the desired user: <input type="text" id="theUsernameInput"
+			name="usernameInput" value=""></p>
+	<h2 style="text-align: center;">Change the attributes to new ones (If you put mandatory fields in blank, the fields will remain the same).</h2>
+	<font color="red">(If you are a USER, and you try to change email, name, state and visibility, the values will not change because you are not allowed to do so.) </font>
+	<p>
+		Enter email: <input type="text" id="emailInput" name="emailInput"
+			value=""> <font color="red">(Email must be a set of
+			letters, then the special character @, then letters that can be
+			separated by an . (optional) and finally .domain) </font>
+	</p>
+	<p>
+		Enter name: <input type="text" id="nameInput" name="nameInput"
+			value=""> <font color="red">(Name must be a Upper-case
+			letter following by a set of lower-case letters and the names and the
+			surnames must be separated by having one space between them.)</font>
+	</p>
+	<p>
+		Enter telephone: <input type="text" id="telephoneInput"
+			name="telephoneInput" value=""> <font color="red">(Telephone
+			must be the international access code following by 9 numbers) </font>
+	</p>
+	<p>
+		Enter password: <input type="password" id="passwordInput"
+			name="passwordInput" value=""> <font color="red">(Password
+			must have at least one lower letter or one capital letter, and one
+			number and have at least length 5.) </font>
+	</p>
+	<font color="red">(If you decide to change the visibility, changing visibility will only work if you change the visibility of a person with role above yours, except if you are a Super User. If the condition don't apply, the attributes can't be changed.) </font>
+	<p>Select profile visibility:</p>
+	<input name="profile" type="radio" id="public" name="public" value="Public">Public
+	<input name="profile" type="radio" id="private" name="private" value="Private">Private
+	<p><font color="red">(If you decide to change the role, changing the role will only work if you have GA and SU roles, and for them to work, if you are GA, you only can change User to GBO and GBO to User, and if you are SU you can change the role of yours to every role that exists but you might lose some power. If all this conditions won't apply, the attributes can't be changed.) </font></p>
+	<p>Select user role:</p>
+	 <input name="role" type="radio" id="user" name="user" value="User">User
+	 <input name="role" type="radio" id="backofficeManagement" name="backofficeManagement" value="BackofficeManagement">BackofficeManagement
+	 <input name="role" type="radio" id="applicationManagement" name="applicationManagement" value="ApplicationManagement">ApplicationManagement
+	 <input name="role" type="radio" id="superUser" name="superUser" value="SuperUser">SuperUser
+	 <p>Select user state:</p>
+	 <input name="state" type="radio" id="active" name="active" value="ACTIVE">ACTIVE
+	 <input name="state" type="radio" id="inactive" name="inactive" value="INACTIVE">INACTIVE
+	<p>
+		Enter ocupation: <input type="text" id="ocupationInput"
+			name="ocupationInput" value="">
+	</p>
+	<p>
+		Enter workplace: <input type="text" id="workplaceInput"
+			name="workplaceInput" value="">
+	</p>
+	<p>
+		Enter address: <input type="text" id="addressInput"
+			name="addressInput" value=""> <font color="red">(TODO)</font>
+	</p>
+	<p>
+		Enter postalCode: <input type="text" id="postalCodeInput"
+			name="postalCodeInput" value=""> <font color="red">(If this field is filled, Postal Code must be 4 numbers followed by an - and 3 other numbers.) </font>
+	</p>
+	<p>
+		Enter taxIdentification: <input type="text"
+			id="taxIdentificationInput" name="taxIdentificationInput" value=""><font color="red">(If this field is filled, Tax Identification must be 9 numbers.) </font>
+	</p>
+	<button type="button" id="attributesButton" name="attributesButton">Change Attributes</button>
+	<p id="changeAttributesSuccesfulOrErrorId"></p>
+</body>
+<script>
+	window.onload = function() {
+		var activeState = document.getElementById("active");
+		var inactiveState = document.getElementById("inactive");
+		var publicVisibility = document.getElementById("public");
+		var privateVisibility = document.getElementById("private");
+		var user = document.getElementById("user");
+		var backofficeManagement = document.getElementById("backofficeManagement");
+		var applicationManagement = document.getElementById("applicationManagement");
+		var superUser = document.getElementById("superUser");
+		var button = document.getElementById("attributesButton");
+		button.onclick = function() {
+			var xmlhttp = new XMLHttpRequest();
+			var usernameToChange = document.getElementById("theUsernameInput").value;
+			var email = document.getElementById("emailInput").value;
+			var name = document.getElementById("nameInput").value;
+			var telephone = document.getElementById("telephoneInput").value;
+			var password = document.getElementById("passwordInput").value;
+			var visibility = document.getElementById("public").checked ? "Public"
+					: document.getElementById("private").checked ? "Private"
+							: "";
+			var role = document.getElementById("user").checked ? "User"
+					: document.getElementById("backofficeManagement").checked ? "BackofficeManagement"
+							: document.getElementById("applicationManagement").checked ? 
+									"ApplicationManagement" : 
+										document.getElementById("superUser").checked ? "SuperUser" : "";
+			var state = document.getElementById("active").checked ? "ACTIVE"
+					: document.getElementById("inactive").checked ? "INACTIVE"
+							: "";
+			var ocupation = document.getElementById("ocupationInput").value;
+			var workplace = document.getElementById("workplaceInput").value;
+			var address = document.getElementById("addressInput").value;
+			var postalCode = document.getElementById("postalCodeInput").value;
+			var taxIdentification = document
+					.getElementById("taxIdentificationInput").value;
+			var url = "https://clever-bit-416009.oa.r.appspot.com/rest/attribute/account";
+			xmlhttp.open("POST", url, true);
+			xmlhttp.setRequestHeader("Content-Type",
+					"application/json;charset=UTF-8");
+			xmlhttp.onreadystatechange = function() {
+				var registerStatus = document
+						.getElementById("changeAttributesSuccesfulOrErrorId");
+				if (this.readyState == 4 && this.status == 200) {
+					registerStatus.style.color = "green";
+					registerStatus.innerHTML = "Change Attributes Succesful!";
+					setTimeout(
+							function() {
+								window.location
+										.replace("https://clever-bit-416009.oa.r.appspot.com/profile/profile.html");
+							}, 3000);
+				} else {
+					if (xmlhttp.status == "400") {
+						registerStatus.style.color = "red";
+						registerStatus.innerHTML = "ERROR 400 BAD REQUEST"
+					} 
+					if (xmlhttp.status == "406") {
+						registerStatus.style.color = "red";
+						registerStatus.innerHTML = "ERROR 406 NOT ACCEPTABLE"
+					} 
+					if (xmlhttp.status == "304") {
+						registerStatus.style.color = "red";
+						registerStatus.innerHTML = "ERROR 304 NOT MODIFIED"
+					} 
+				}
+			};
+			console.log("POST!");
+			xmlhttp.send(JSON.stringify({
+				"email" : email,
+				"name" : name,
+				"telephone" : telephone,
+				"password" : password,
+				"visibility" : visibility,
+				"ocupation" : ocupation,
+				"workplace" : workplace,
+				"address" : address,
+				"postalCode" : postalCode,
+				"taxIdentification" : taxIdentification,
+				"role" : role,
+				"state" : state,
+				"username": usernameToChange
+			}));
+		}
+	}
+</script>
+<footer> Copyright: FCT NOVA 2023 </footer>
+</html>

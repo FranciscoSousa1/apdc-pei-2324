@@ -1,0 +1,7 @@
+indexes:
+
+- kind: UserLog
+  ancestor: yes
+  properties:
+  - name: user-login-time
+    direction: desc

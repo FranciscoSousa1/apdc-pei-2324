@@ -1,0 +1,1 @@
+gcloud datastore indexes create .\src\main\webapp\WEB-INF\index.yaml

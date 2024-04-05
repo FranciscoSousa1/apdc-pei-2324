@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+<meta http-equiv="content-type"
+	content="application/xhtml+xml; charset=UTF-8" />
+<title>Change User Status</title>
+</head>
+
+<body>
+		<h1 style="text-align: center;">Change Role of User</h1>
+	<img src="nova.png"
+		style="position: absolute; left: 975px; top: 40px; height: 180px;">
+				<br><br>
+		<p>Enter the username of the desired user: <input type="text" id="theUsernameInput"
+			name="usernameInput" value=""></p>
+	 <p>Select user state:</p>
+	 <p><input name="state" type="radio" id="active" name="active" value="ACTIVE">ACTIVE
+	 <input name="state" type="radio" id="inactive" name="inactive" value="INACTIVE">INACTIVE</p>
+	<button type="button" id="statusButton" name="statusButton">Change Status</button>
+	<p id="changeStatusuccesfulOrErrorId"></p>
+</body>
+<script>
+	window.onload = function() {
+		var active = document.getElementById("active");
+		var inactive = document.getElementById("inactive");
+		var button = document.getElementById("statusButton");
+		console.log("Entering function...");
+		button.onclick = function() {
+			console.log("Entered in the function...");
+			console.log("Creating the request and Getting Values");
+			var xmlhttp = new XMLHttpRequest();
+			var usernameToChange = document.getElementById("theUsernameInput").value;
+			var state = active.checked ? "ACTIVE"
+					: document.getElementById("inactive").checked ? "INACTIVE"
+							: "";
+			var url = "https://clever-bit-416009.oa.r.appspot.com/rest/attribute/status";
+			xmlhttp.open("POST", url, true);
+			xmlhttp.setRequestHeader("Content-Type",
+					"application/json;charset=UTF-8");
+			xmlhttp.onreadystatechange = function() {
+				var registerStatus = document
+						.getElementById("changeStatusSuccesfulOrErrorId");
+				if (this.readyState == 4 && this.status == 200) {
+					registerStatus.style.color = "green";
+					registerStatus.innerHTML = "Change Status Succesful!";
+					setTimeout(
+							function() {
+								window.location
+										.replace("https://clever-bit-416009.oa.r.appspot.com/profile/profile.html");
+							}, 3000);
+				} else {
+					if (xmlhttp.status == "400") {
+						registerStatus.style.color = "red";
+						registerStatus.innerHTML = "ERROR 400 BAD REQUEST";
+					} 
+					if (xmlhttp.status == "304") {
+						registerStatus.style.color = "red";
+						registerStatus.innerHTML = "ERROR 304 NOT MODIFIED";
+					} 
+					if (xmlhttp.status == "406") {
+						registerStatus.style.color = "red";
+						registerStatus.innerHTML = "Something happened. You lost permissions, an user with more permissions might have deleted you, or you need to login in order to continue doing operations. Returning..."
+							setTimeout(
+									function() {
+										window.location
+												.replace("https://clever-bit-416009.oa.r.appspot.com/index.html");
+									}, 3000);
+					} 
+				}
+			};
+			console.log("POST!");
+			xmlhttp.send(JSON.stringify({
+				"username": usernameToChange,
+				"state" : state
+			}));
+		}
+	}
+</script>
+<footer> Copyright: FCT NOVA 2023 </footer>
+</html>
