@@ -1,5 +1,7 @@
 package pt.unl.fct.di.apdc.firstwebapp.resources;
 
+import java.util.UUID;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.CookieParam;
@@ -14,6 +16,7 @@ import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import pt.unl.fct.di.apdc.firstwebapp.Authentication.SignatureUtils;
 import pt.unl.fct.di.apdc.firstwebapp.util.DataValidation;
 import pt.unl.fct.di.apdc.firstwebapp.util.RemoveData;
 
@@ -31,58 +34,71 @@ public class RemoveResource {
 	@POST
 	@Path("/v2")
 	@Consumes(MediaType.APPLICATION_JSON)
-	public Response doRemoveV4(RemoveData data, @CookieParam("session::apdc") Cookie cookie, @Context HttpServletRequest request, @Context HttpHeaders headers) {
+	public Response doRemoveV4(RemoveData data, @CookieParam("session::apdc") Cookie cookie) {
 		if (cookie == null)
 		{
 			return Response.status(Status.NOT_ACCEPTABLE).build();
 		}
-		String[] valueSplit = cookie.getValue().split(".");
+		String[] valueSplit = cookie.getValue().split("\\.");
 		String username = valueSplit[0];
-		Key userTheChangerKey = datastore.newKeyFactory().setKind("User").newKey(username);
-		Entity userTheChanger;
-		try {
-			userTheChanger = datastore.get(userTheChangerKey);
-		}
-		catch (DatastoreException e)
-		{
-			cookie = null;
-			return Response.status(Status.NOT_ACCEPTABLE).entity("The user you want to remove does not exist.").cookie(new NewCookie(cookie)).build();
-		}
-		Key userKey = datastore.newKeyFactory().setKind("User").newKey(data.username);
+		Key userKey = datastore.newKeyFactory().setKind("User").newKey(username);
 		Entity user;
 		try {
 			user = datastore.get(userKey);
 		}
 		catch (DatastoreException e)
 		{
+			cookie = null;
 			return Response.status(Status.NOT_ACCEPTABLE).entity("You have been deleted.").build();
+		}
+		String id = UUID.randomUUID().toString();
+		long currentTime = System.currentTimeMillis();
+		String fields = username+"."+ id +"."+currentTime+"."+1000*60*60*2;
+		
+		String signature = SignatureUtils.calculateHMac(DataValidation.key, fields);
+		
+		if(signature == null) {
+			return Response.status(Status.INTERNAL_SERVER_ERROR).entity("Error while signing token. See logs.").build();
+		}
+		String theValue =  fields + "." + signature;
+		NewCookie theCookie = new NewCookie("session::apdc", theValue, "/", null, "comment", 1000*60*60*2, false, true);
+		Key userTheChangerKey = datastore.newKeyFactory().setKind("User").newKey(data.username);
+		Entity userTheChanger = null;
+		try {
+			userTheChanger = datastore.get(userTheChangerKey);
+		}
+		catch (DatastoreException e)
+		{
+			return Response.status(Status.NOT_ACCEPTABLE).entity("The user does not exist.").build();
 		}
 		if (user.getString("state").equals("INACTIVE"))
 		{
-			return Response.status(Status.NOT_ACCEPTABLE).build();
+			return Response.status(Status.NOT_ACCEPTABLE).entity("The state of yours has become inactive.").build();
 		}
 		String userRole = user.getString("role");
 		String userTheChangerRole = userTheChanger.getString("role");
-		if (DataValidation.convertRole(userRole) >= DataValidation.convertRole(userTheChangerRole))
+		if (userRole.equals(DataValidation.SU))
 		{
-			if (userTheChangerRole.equals(DataValidation.SU) || userTheChangerRole.equals(DataValidation.USER))
+			if (userTheChanger.getString("username").equals(username))
 			{
-				if (userTheChanger.getString("username").equals(username))
-				{
-					cookie = null;
-					datastore.delete(userKey);
-					return Response.status(Status.NOT_ACCEPTABLE).build();
-				}
+				cookie = null;
 				datastore.delete(userKey);
-				return Response.ok().cookie(new NewCookie(cookie)).build();
+				return Response.ok().cookie(theCookie).build();
 			}
-			return Response.status(Status.NOT_MODIFIED).cookie(new NewCookie(cookie)).build();
+			datastore.delete(userTheChangerKey);
+			return Response.ok().cookie(theCookie).build();
+		}
+		if (userRole.equals(DataValidation.USER) && userTheChanger.getString("username").equals(username))
+		{
+			cookie = null;
+			datastore.delete(userKey);
+			return Response.status(Status.NOT_ACCEPTABLE).build();
 		}
 		if (userRole.equals(DataValidation.GA) && DataValidation.convertRole(userTheChangerRole) < DataValidation.convertRole(userRole))
 		{
-			datastore.delete(userKey);
-			return Response.ok().cookie(new NewCookie(cookie)).build();
+			datastore.delete(userTheChangerKey);
+			return Response.ok().cookie(theCookie).build();
 		}
-		return Response.status(Status.NOT_MODIFIED).cookie(new NewCookie(cookie)).build();
+		return Response.status(Status.NOT_MODIFIED).build();
 	}
 }

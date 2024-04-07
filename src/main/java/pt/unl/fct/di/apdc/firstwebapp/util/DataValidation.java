@@ -20,9 +20,8 @@ public class DataValidation {
 	public static final String STATE = "state";
 	public static final String PASSWORD = "password";
 	
-	public static final String USERNAME_EXPRESSION = "[a-z]+[0-9]+";
-	public static final String USERNAME_NOT_VALID = "Username must not contain any special character and have a set of lower case characters and then"
-			+ " a set of numbers.";
+	public static final String USERNAME_EXPRESSION = "[a-z]+[0-9]+[A-Za-z]*";
+	public static final String USERNAME_NOT_VALID = "Username must not contain any special character and have a set of lower case characters and then a set of numbers.";
 	public static final String USERNAME_VALID = "Username is valid.";
 	
 	public static final String EMAIL_EXPRESSION = "[A-Za-z]+[@][A-Za-z.]+[A-Za-z][.][a-z]+";
@@ -30,7 +29,7 @@ public class DataValidation {
 			+ "can be separated by an . (optional) and finally .<domain>";
 	public static final String EMAIL_VALID = "Email is valid.";
 	
-	public static final String NAME_EXPRESSION = "[[A-Z][a-z]+[ ][A-Z][a-z]]+";
+	public static final String NAME_EXPRESSION = "[[A-Z][a-z]+[ ][A-Z][a-z]+[ ]?]+";
 	public static final String NAME_NOT_VALID = "Name must be a Upper-case letter following by a set of lower-case letters and the names and the surnames must be separated"
 			+ "by the name or the other surnames by having one space between them.";
 	public static final String NAME_VALID = "Name is valid.";
@@ -43,7 +42,7 @@ public class DataValidation {
 	public static final String TAX_IDENTIFICATION_NOT_VALID = "Tax Identification must be 9 numbers.";
 	public static final String TAX_IDENTIFICATION_VALID = "Tax Identification is valid.";
 	
-	public static final String PASSWORD_EXPRESSION = "[[a-zA-Z][0-9]+]+";
+	public static final String PASSWORD_EXPRESSION = "[a-zA-Z]+[0-9]+";
 	public static final String PASSWORD_NOT_VALID = "Password must have at least one lower letter or one capital letter, and one number and have at least length 5.";
 	public static final String PASSWORD_VALID = "Password is valid.";
 	
@@ -71,9 +70,12 @@ public class DataValidation {
 	
 	public static final String ONE_OR_MORE_FIELDS_NULL = "One of the required fields are null.";
 	
+	public static final String PUBLIC = "PUBLIC";
+	
+	public static final String PRIVATE = "PRIVATE";
+	
 	public static String usernameValidation(String username) {
-		String regExpressionUsername = USERNAME_EXPRESSION;
-		Pattern pattern = Pattern.compile(regExpressionUsername);
+		Pattern pattern = Pattern.compile(USERNAME_EXPRESSION);
 		Matcher matcher = pattern.matcher(username);
 		if (!matcher.matches()) {
 			return USERNAME_NOT_VALID;
@@ -82,8 +84,7 @@ public class DataValidation {
 	}
 
 	public static String emailValidation(String email) {
-		String regExpressionUsername = EMAIL_EXPRESSION;
-		Pattern pattern = Pattern.compile(regExpressionUsername);
+		Pattern pattern = Pattern.compile(EMAIL_EXPRESSION);
 		Matcher matcher = pattern.matcher(email);
 		if (!matcher.matches()) {
 			return EMAIL_NOT_VALID;
@@ -92,8 +93,7 @@ public class DataValidation {
 	}
 
 	public static String nameValidation(String name) {
-		String regExpressionName = NAME_EXPRESSION;
-		Pattern pattern = Pattern.compile(regExpressionName);
+		Pattern pattern = Pattern.compile(NAME_EXPRESSION);
 		Matcher matcher = pattern.matcher(name);
 		if (!matcher.matches()) {
 			return NAME_NOT_VALID;
@@ -101,21 +101,19 @@ public class DataValidation {
 			return NAME_VALID;
 	}
 	public static String postalCodeValidation(String postalCode) {
-		String regExpressionpostalCode = POSTAL_CODE_EXPRESSION;
-		Pattern pattern = Pattern.compile(regExpressionpostalCode);
+		Pattern pattern = Pattern.compile(POSTAL_CODE_EXPRESSION);
 		Matcher matcher = pattern.matcher(postalCode);
 		if (postalCode != "")
 		{
 			if (!matcher.matches()) {
-				return POSTAL_CODE_EXPRESSION;
-			} else
 				return POSTAL_CODE_NOT_VALID;
+			} else
+				return POSTAL_CODE_VALID;
 		}
 		return POSTAL_CODE_VALID;
 	}
 	public static String taxIdentificationValidation(String taxIdentification) {
-		String regExpressionTaxIdentification = TAX_IDENTIFICATION_EXPRESSION;
-		Pattern pattern = Pattern.compile(regExpressionTaxIdentification);
+		Pattern pattern = Pattern.compile(TAX_IDENTIFICATION_EXPRESSION);
 		Matcher matcher = pattern.matcher(taxIdentification);
 		if (taxIdentification != "" )
 		{
@@ -127,16 +125,14 @@ public class DataValidation {
 	}
 
 	public static String passwordValidation(String password) {
-		String regExpressionPassword = PASSWORD_EXPRESSION;
-		if (!match(regExpressionPassword, password) || password.length() < 5) {
+		if (!match(PASSWORD_EXPRESSION, password) || password.length() < 5) {
 			return PASSWORD_NOT_VALID;
 		} else
 			return PASSWORD_VALID;
 	}
 
 	public static String telephoneValidation(String telephone) {
-		String regExpressionTelephone = TELEPHONE_EXPRESSION;
-		if (!match(regExpressionTelephone, telephone) || telephone.length() < 11 || telephone.length() > 13) {
+		if (!match(TELEPHONE_EXPRESSION, telephone) && (telephone.length() < 11 || telephone.length() > 13)) {
 			return TELEPHONE_NOT_VALID;
 		} else
 			return TELEPHONE_VALID;
@@ -203,13 +199,6 @@ public class DataValidation {
 		if (data.username.isEmpty() || data.email.isEmpty() || data.name.isEmpty() || data.password.isEmpty()
 				|| data.confirmation.isEmpty() || data.telephone.isEmpty()) {
 			return ONE_OR_MORE_FIELDS_EMPTY;
-		} else
-			return FIELDS_VALID;
-	}
-
-	public static String dataEmpty(LoginData data) {
-		if (data.username.isEmpty() || data.password.isEmpty()) {
-			return  ONE_OR_MORE_FIELDS_EMPTY;
 		} else
 			return FIELDS_VALID;
 	}

@@ -13,13 +13,12 @@ public class RegisterData {
 	public String address;
 	public String postalCode;
 	public String taxIdentification;
-	public String usernameToChange;
 	public RegisterData() {
 		
 	}
 	public RegisterData(String username, String password, String confirmation, String email, 
 			String name, String telephone, String visibility, String ocupation, String workplace, String address,
-			String postalCode, String taxIdentification, String usernameToChange) {
+			String postalCode, String taxIdentification) {
 		this.username = username;
 		this.email = email;
 		this.name = name;
@@ -32,7 +31,6 @@ public class RegisterData {
 		this.taxIdentification = taxIdentification;
 		this.password = password;
 		this.confirmation = confirmation;
-		this.usernameToChange = usernameToChange;
 	}
 	public boolean dataNull() {
 		return username == null || password == null;

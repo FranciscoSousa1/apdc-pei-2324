@@ -91,8 +91,8 @@
 			var telephone = document.getElementById("telephoneInput").value;
 			var password = document.getElementById("passwordInput").value;
 			var confirmation = document.getElementById("confirmationPassword").value;
-			var visibility = document.getElementById("public").checked ? "Public"
-					: document.getElementById("private").checked ? "Private"
+			var visibility = document.getElementById("public").checked ? "PUBLIC"
+					: document.getElementById("private").checked ? "PRIVATE"
 							: "";
 			var ocupation = document.getElementById("ocupationInput").value;
 			var workplace = document.getElementById("workplaceInput").value;
@@ -140,9 +140,7 @@
 				"workplace" : workplace,
 				"address" : address,
 				"postalCode" : postalCode,
-				"taxIdentification" : taxIdentification,
-				"role" : "User",
-				"state" : "INACTIVE"
+				"taxIdentification" : taxIdentification
 			}));
 			console.log("Data sent!");
 		}

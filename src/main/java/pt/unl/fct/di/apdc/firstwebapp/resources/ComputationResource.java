@@ -11,6 +11,8 @@ import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import pt.unl.fct.di.apdc.firstwebapp.resources.LogoutResource;
+
 @Path("/utils")
 @Produces(MediaType.APPLICATION_JSON + ";charset=utf-8") 
 public class ComputationResource { 
@@ -34,6 +36,13 @@ public class ComputationResource {
 	@Produces(MediaType.TEXT_PLAIN)
 	public Response login(@CookieParam("session::apdc") Cookie cookie) throws IOException {
 			return Response.temporaryRedirect(URI.create("/login/login.html")).build();
+	}
+	@GET
+	@Path("/logout")
+	@Produces(MediaType.TEXT_PLAIN)
+	public Response logout(@CookieParam("session::apdc") Cookie cookie) throws IOException {
+			//doLogout(cookie);
+			return Response.temporaryRedirect(URI.create("/index.html")).build();
 	}
 	@GET
 	@Path("/profile")

@@ -10,6 +10,7 @@
 	<img src="nova.png"
 		style="position: absolute; left: 975px; top: -40px;">
 	<h1 style="text-align: center;">Operations of User</h1>
+	<p id = "usernameValue">Cookie info: </p>
 	<p>
 		<a href="/rest/utils/role">>Change Account Role</a>
 	</p>
@@ -28,9 +29,17 @@
 	<p>
 		<a href="/rest/utils/password">>Change password</a>
 	</p>
+		<p>
+		<a href="/rest/utils/logout">>Logout</a>
+	</p>
 </body>
 <script>
-	
+fetch('https://clever-bit-416009.oa.r.appspot.com/rest/cookie/info')
+.then(response => response.text())
+.then(data => {
+                document.getElementById("usernameValue").innerHTML = data;
+            })
+.catch(error => console.error('Fetch failed.', error))
 </script>
 <footer> Copyright: FCT NOVA 2023 </footer>
 </html>

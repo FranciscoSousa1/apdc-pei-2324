@@ -31,8 +31,7 @@ public class LoginResource {
 	@POST
 	@Path("/v2")
 	@Consumes(MediaType.APPLICATION_JSON)
-	public Response doLoginV4(LoginData data, @CookieParam("session::apdc") Cookie cookie,
-			@Context HttpServletRequest request, @Context HttpHeaders headers) {
+	public Response doLoginV4(LoginData data) {
 		if (data.dataEmpty() || data.dataNull()) {
 			return Response.status(Status.BAD_REQUEST).build();
 		}
@@ -43,7 +42,6 @@ public class LoginResource {
 		}
 		catch (DatastoreException e)
 		{
-			cookie = null;
 			return Response.status(Status.NOT_ACCEPTABLE).build();
 		}
 		if (user != null) {
@@ -54,22 +52,19 @@ public class LoginResource {
 			if (!data.password.equals(user.getString(DataValidation.PASSWORD))) {
 				return Response.status(Status.FORBIDDEN).build();
 			}
-			NewCookie theCookie;
-			if (cookie == null)
-			{
-				String id = UUID.randomUUID().toString();
-				long currentTime = System.currentTimeMillis();
-				String fields = data.username + "." + id + "." + currentTime + "." + 1000 * 60 * 60 * 2;
-				String signature = SignatureUtils.calculateHMac(DataValidation.key, fields);
-				String value = fields + "." + signature;
-				theCookie = new NewCookie("session::apdc",  value, "/", null, "comment", 1000 * 60 * 60 * 2, false, true);
-				return Response.ok().cookie(theCookie).build();
+			String id = UUID.randomUUID().toString();
+			long currentTime = System.currentTimeMillis();
+			String fields = data.username+"."+ id +"."+currentTime+"."+1000*60*60*2;
+			
+			String signature = SignatureUtils.calculateHMac(DataValidation.key, fields);
+			
+			if(signature == null) {
+				return Response.status(Status.INTERNAL_SERVER_ERROR).entity("Error while signing token. See logs.").build();
 			}
-			else {
-				theCookie = new NewCookie("session::apdc", cookie.getValue(), "/", null, "comment", 1000 * 60 * 60 * 2, false, true);
-				return Response.ok().cookie(theCookie).build();
-			}
+			String value =  fields + "." + signature;
+			NewCookie cookie = new NewCookie("session::apdc", value, "/", null, "comment", 1000*60*60*2, false, true);
+			return Response.ok().cookie(cookie).build();
 		}
-		return Response.status(Status.FORBIDDEN).entity("Username not valid.").build();
+		return Response.status(Status.NOT_FOUND).entity("Username not valid.").build();
 	}
 }

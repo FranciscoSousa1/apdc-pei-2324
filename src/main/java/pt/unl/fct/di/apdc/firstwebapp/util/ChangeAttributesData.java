@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ChangeAttributesData {
-	public String usernameToChange;
+	public String username;
 	public String password;
 	public String confirmation;
 	public String email;
@@ -23,7 +23,7 @@ public class ChangeAttributesData {
 	}
 	public ChangeAttributesData(String password, String confirmation, String email, 
 			String name, String telephone, String visibility, String ocupation, String workplace, String address,
-			String postalCode, String taxIdentification, String role, String state, String usernameToChange) {
+			String postalCode, String taxIdentification, String role, String state, String username) {
 		this.email = email;
 		this.name = name;
 		this.telephone = telephone;
@@ -37,13 +37,13 @@ public class ChangeAttributesData {
 		this.confirmation = confirmation;
 		this.role = role;
 		this.state = state;
-		this.usernameToChange = usernameToChange;
+		this.username = username;
 	}
 
 	public static String dataValidation(ChangeAttributesData data) {
 		List<String> results = new ArrayList<String>();
-		results.add(dataNull(data.usernameToChange));
-		results.add(dataEmpty(data.usernameToChange));
+		results.add(dataNull(data.username));
+		results.add(dataEmpty(data.username));
 		if (!data.email.isEmpty() && data.email != null)
 		{
 			results.add(DataValidation.emailValidation(data.email));

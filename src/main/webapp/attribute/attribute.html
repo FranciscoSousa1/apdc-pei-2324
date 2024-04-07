@@ -38,6 +38,10 @@
 			must have at least one lower letter or one capital letter, and one
 			number and have at least length 5.) </font>
 	</p>
+		<p>
+		Enter confirmation: <input type="password" id="confirmationInput"
+			name="confirmationInput" value=""> <font color="red">(Confirmation must be equal than password and password must be in accord to the rules appeared above.) </font>
+	</p>
 	<font color="red">(If you decide to change the visibility, changing visibility will only work if you change the visibility of a person with role above yours, except if you are a Super User. If the condition don't apply, the attributes can't be changed.) </font>
 	<p>Select profile visibility:</p>
 	<input name="profile" type="radio" id="public" name="public" value="Public">Public
@@ -91,15 +95,16 @@
 			var email = document.getElementById("emailInput").value;
 			var name = document.getElementById("nameInput").value;
 			var telephone = document.getElementById("telephoneInput").value;
+			var confirmation = document.getElementById("confirmationInput").value;
 			var password = document.getElementById("passwordInput").value;
-			var visibility = document.getElementById("public").checked ? "Public"
-					: document.getElementById("private").checked ? "Private"
+			var visibility = document.getElementById("public").checked ? "PUBLIC"
+					: document.getElementById("private").checked ? "PRIVATE"
 							: "";
-			var role = document.getElementById("user").checked ? "User"
-					: document.getElementById("backofficeManagement").checked ? "BackofficeManagement"
+			var role = document.getElementById("user").checked ? "USER"
+					: document.getElementById("backofficeManagement").checked ? "GBO"
 							: document.getElementById("applicationManagement").checked ? 
-									"ApplicationManagement" : 
-										document.getElementById("superUser").checked ? "SuperUser" : "";
+									"GA" : 
+										document.getElementById("superUser").checked ? "SU" : "";
 			var state = document.getElementById("active").checked ? "ACTIVE"
 					: document.getElementById("inactive").checked ? "INACTIVE"
 							: "";
@@ -141,10 +146,12 @@
 			};
 			console.log("POST!");
 			xmlhttp.send(JSON.stringify({
+				"username": usernameToChange,
 				"email" : email,
 				"name" : name,
 				"telephone" : telephone,
 				"password" : password,
+				"confirmation":confirmation,
 				"visibility" : visibility,
 				"ocupation" : ocupation,
 				"workplace" : workplace,
@@ -152,8 +159,7 @@
 				"postalCode" : postalCode,
 				"taxIdentification" : taxIdentification,
 				"role" : role,
-				"state" : state,
-				"username": usernameToChange
+				"state" : state
 			}));
 		}
 	}

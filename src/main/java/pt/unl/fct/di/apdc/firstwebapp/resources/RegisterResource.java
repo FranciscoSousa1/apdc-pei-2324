@@ -41,8 +41,15 @@ public class RegisterResource {
 	public Response doRegister(RegisterData data) {
 		LOG.fine("Attempt to register user: " + data.username);
 		String status = DataValidation.dataValidation(data);
-		if (!status.contains("valid")) {
+		if (!status.contains(DataValidation.VALID)) {
 			return Response.status(Status.BAD_REQUEST).entity(status).build();
+		}
+		if (data.visibility != "")
+		{
+			if (!data.visibility.equals("PUBLIC") && !data.visibility.equals("PRIVATE"))
+			{
+				return Response.status(Status.BAD_REQUEST).entity("Visibility is not PUBLIC nor PRIVATE.").build();
+			}
 		}
 		Key userKey = datastore.newKeyFactory().setKind("User").newKey(data.username);
 		Entity user = datastore.get(userKey);
@@ -53,7 +60,7 @@ public class RegisterResource {
 					.set("email", data.email).set("name", data.name).set("telephone", data.telephone)
 					.set("visibility", data.visibility).set("ocupation", data.ocupation)
 					.set("workplace", data.workplace).set("address", data.address).set("postalCode", data.postalCode)
-					.set("taxIdentification", data.taxIdentification).set("role", "User").set("state", "INACTIVE")
+					.set("taxIdentification", data.taxIdentification).set("role", DataValidation.USER).set("state", DataValidation.INACTIVE)
 					.build();
 			datastore.put(user);
 			return Response.ok().entity("Register succesful!").build();
