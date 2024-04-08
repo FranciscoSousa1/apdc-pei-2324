@@ -17,6 +17,8 @@ import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.apache.commons.codec.digest.DigestUtils;
+
 import com.google.gson.Gson;
 
 import pt.unl.fct.di.apdc.firstwebapp.Authentication.SignatureUtils;
@@ -30,8 +32,6 @@ import com.google.cloud.Timestamp;
 @Path("/attribute")
 @Produces(MediaType.APPLICATION_JSON + ";charset=utf-8")
 public class AttributesResource {
-
-	private final Gson g = new Gson();
 
 	private final Datastore datastore = DatastoreOptions.getDefaultInstance().getService();
 
@@ -172,10 +172,10 @@ public class AttributesResource {
 			datastore.put(user);
 			return Response.status(Status.NOT_ACCEPTABLE).entity("A user might have changed your password").build();
 		}
-		if (!data.password.equals(user.getString("password"))) {
+		if (!DigestUtils.sha512Hex(data.password).equals(user.getString("password"))) {
 			return Response.status(Status.FORBIDDEN).build();
 		}
-		user = Entity.newBuilder(user).set("password", data.newPassword).set("signature", signature).build();
+		user = Entity.newBuilder(user).set("password", DigestUtils.sha512Hex(data.newPassword)).set("signature", signature).build();
 		datastore.put(user);
 		return Response.ok().cookie(theCookie).build();
 	}
@@ -185,12 +185,12 @@ public class AttributesResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response changeAccountAttributes(ChangeAttributesData data, @CookieParam("session::apdc") Cookie cookie) {
 		if (cookie == null) {
-			return Response.status(Status.NOT_ACCEPTABLE).entity("a").build();
+			return Response.status(Status.NOT_ACCEPTABLE).entity("Cookie is null. Redirecting...").build();
 		}
 		if (data.password != "" || data.confirmation != "") {
 			if (!DataValidation.passwordValidation(data.password).contains("valid")
 					|| !data.password.equals(data.confirmation)) {
-				return Response.status(Status.BAD_REQUEST).build();
+				return Response.status(Status.BAD_REQUEST).entity("Password is not  equal to confirmation or is not valid.").build();
 			}
 		}
 		String theValue = cookie.getValue();
@@ -215,30 +215,30 @@ public class AttributesResource {
 		}
 		if (user == null) {
 			cookie = null;
-			return Response.status(Status.NOT_ACCEPTABLE).build();
+			return Response.status(Status.NOT_ACCEPTABLE).entity("Cookie is null. Redirecting...").build();
 		}
 		if (user.getString("state").equals("INACTIVE")) {
-			return Response.status(Status.NOT_ACCEPTABLE).entity("b").build();
+			return Response.status(Status.NOT_ACCEPTABLE).entity("Someone have changed the state of yours to inactive. Redirecting...").build();
 		}
 		if (System.currentTimeMillis() > (Long.valueOf(valueSplit[2]) + Long.valueOf(valueSplit[3]))) {
-			return Response.status(Status.NOT_ACCEPTABLE).entity("c").build();
+			return Response.status(Status.NOT_ACCEPTABLE).entity("Cookie has expired. Redirecting...").build();
 		}
 		if (!user.getString("signature").equals(valueSplit[valueSplit.length - 1])) {
 			return Response.status(Status.NOT_ACCEPTABLE)
 					.entity("The cookie has been changed mysteriously. Redirecting...").build();
 		}
 		if (!ChangeAttributesData.dataValidation(data).contains("valid")) {
-			return Response.status(Status.BAD_REQUEST).build();
+			return Response.status(Status.BAD_REQUEST).entity("Data is not valid. Verify the fields once again.").build();
 		}
 		if (data.visibility != null && !data.visibility.isEmpty()) {
 			if (!data.visibility.equals("PRIVATE") && !data.visibility.equals("PUBLIC")) {
-				return Response.status(Status.BAD_REQUEST).build();
+				return Response.status(Status.BAD_REQUEST).entity("Visibility must be PRIVATE or PUBLIC.").build();
 			}
 		}
 		if (user.getString("password_changed").equals("true")) {
 			user = Entity.newBuilder(user).set("password_changed", "false").build();
 			datastore.put(user);
-			return Response.status(Status.NOT_ACCEPTABLE).entity("A user might have changed your password").build();
+			return Response.status(Status.NOT_ACCEPTABLE).entity("A user might have changed your password. Redirecting...").build();
 		}
 
 		Entity userToChange = null;
@@ -249,7 +249,7 @@ public class AttributesResource {
 			try {
 				userToChange = datastore.get(usernameToChangeKey);
 			} catch (DatastoreException e) {
-				return Response.status(Status.NOT_FOUND).build();
+				return Response.status(Status.NOT_FOUND).entity("The user you want to change does not exist.").build();
 			}
 		}
 		String userRole = user.getString("role");
@@ -257,30 +257,30 @@ public class AttributesResource {
 		if (!data.role.isEmpty() && data.role != null) {
 			if (!data.role.equals(DataValidation.USER) && !data.role.equals(DataValidation.GBO)
 					&& !data.role.equals(DataValidation.GA) && !data.role.equals(DataValidation.SU)) {
-				return Response.status(Status.BAD_REQUEST).build();
+				return Response.status(Status.BAD_REQUEST).entity("Role must be USER, GBO, GA or SU in order to work.").build();
 			}
 			if (userRole.equals(DataValidation.USER) || userRole.equals(DataValidation.GBO)) {
-				return Response.status(Status.FORBIDDEN).build();
+				return Response.status(Status.FORBIDDEN).entity("You don't have enough permissions to realize this task.").build();
 			}
 			if (userRole.equals(DataValidation.GA)
 					&& DataValidation.convertRole(DataValidation.GA) <= DataValidation.convertRole(userToChangeRole)) {
-				return Response.status(Status.FORBIDDEN).build();
+				return Response.status(Status.FORBIDDEN).entity("You don't have enough permissions to realize this task.").build();
 			}
 			if (userRole.equals(DataValidation.GA)
 					&& DataValidation.convertRole(DataValidation.GA) > DataValidation.convertRole(userToChangeRole)
 					&& DataValidation.convertRole(data.role) >= DataValidation.convertRole(DataValidation.GA)) {
-				return Response.status(Status.FORBIDDEN).build();
+				return Response.status(Status.FORBIDDEN).entity("The role you want to give is too high for you to do it.").build();
 			}
 		}
 		if (!data.state.isEmpty() && data.state != null) {
 			if (!data.state.equals("ACTIVE") && !data.state.equals("INACTIVE")) {
-				return Response.status(Status.BAD_REQUEST).build();
+				return Response.status(Status.BAD_REQUEST).entity("State must be ACTIVE or INACTIVE.").build();
 			}
 			if (userRole.equals(DataValidation.USER)) {
-				return Response.status(Status.FORBIDDEN).build();
+				return Response.status(Status.FORBIDDEN).entity("You don't have enough permissions to realize this task.").build();
 			}
 			if (DataValidation.convertRole(userRole) <= DataValidation.convertRole(userToChangeRole)) {
-				return Response.status(Status.FORBIDDEN).build();
+				return Response.status(Status.FORBIDDEN).entity("You don't have enough permissions to realize this task.").build();
 			}
 		}
 		boolean areTheSame = userToChange == user;
@@ -288,14 +288,14 @@ public class AttributesResource {
 		if (DataValidation.convertRole(userRole) > DataValidation.convertRole(userToChangeRole)) {
 			bool = makeEntity(data, userToChange, userRole, signature, areTheSame);
 			if (bool) {
-				return Response.ok().cookie(theCookie).build();
+				return Response.ok().cookie(theCookie).entity("Change succesful!").build();
 			}
 			return Response.status(Status.FORBIDDEN).build();
 		}
 		if (userRole.equals(DataValidation.USER) && user == userToChange) {
 			bool = makeEntity(data, userToChange, userRole, signature, areTheSame);
 			if (bool) {
-				return Response.ok().cookie(theCookie).build();
+				return Response.ok().cookie(theCookie).entity("Change succesful!").build();
 			}
 			return Response.status(Status.FORBIDDEN).build();
 		}
@@ -332,7 +332,7 @@ public class AttributesResource {
 			if (!areTheSame) {
 				updatedUserBuilder.set("password_changed", "true");
 			}
-			updatedUserBuilder.set("password", data.password);
+			updatedUserBuilder.set("password", DigestUtils.sha512Hex(data.password));
 		} else if (!data.password.isEmpty() && !DataValidation.passwordValidation(data.password).contains("valid")) {
 			return false;
 		}
@@ -431,11 +431,11 @@ public class AttributesResource {
 		try {
 			userToChange = datastore.get(usernameToChangeKey);
 		} catch (DatastoreException e) {
-			return Response.status(Status.BAD_REQUEST).build();
+			return Response.status(Status.NOT_FOUND).entity("User does not exist.").build();
 		}
 		if (!data.role.equals(DataValidation.USER) && !data.role.equals(DataValidation.GBO)
 				&& !data.role.equals(DataValidation.GA) && !data.role.equals(DataValidation.SU)) {
-			return Response.status(Status.BAD_REQUEST).build();
+			return Response.status(Status.BAD_REQUEST).entity("role must be USER, GBO, GA or SU.").build();
 		}
 		String userRole = user.getString("role");
 		String userToChangeRole = userToChange.getString("role");
@@ -443,21 +443,21 @@ public class AttributesResource {
 			if (userRole.equals(DataValidation.SU)) {
 				userToChange = Entity.newBuilder(userToChange).set("role", data.role).build();
 				datastore.put(userToChange);
-				return Response.ok().cookie(new NewCookie(cookie)).build();
+				return Response.ok().entity("Change succesful!").cookie(theCookie).build();
 			}
 			return Response.status(Status.BAD_REQUEST).build();
 		}
 		if (userRole.equals(DataValidation.SU)) {
 			userToChange = Entity.newBuilder(userToChange).set("role", data.role).build();
 			datastore.put(userToChange);
-			return Response.ok().build();
+			return Response.ok().entity("Change succesful!").cookie(theCookie).build();
 		}
 		if (userRole.equals(DataValidation.GA)
 				&& DataValidation.convertRole(userRole) > DataValidation.convertRole(data.role)
 				&& DataValidation.convertRole(userRole) > DataValidation.convertRole(userToChangeRole)) {
 			userToChange = Entity.newBuilder(userToChange).set("role", data.role).build();
 			datastore.put(userToChange);
-			return Response.ok().cookie(theCookie).build();
+			return Response.ok().entity("Change succesful!").cookie(theCookie).build();
 		}
 		return Response.status(Status.BAD_REQUEST).build();
 	}
@@ -491,7 +491,7 @@ public class AttributesResource {
 			return Response.status(Status.NOT_ACCEPTABLE).entity("Cookie has been expired. Redirecting...").build();
 		}
 		if (data.dataEmpty() || data.dataNull()) {
-			return Response.status(Status.BAD_REQUEST).build();
+			return Response.status(Status.BAD_REQUEST).entity("Data is not valid.").build();
 		}
 		Key userKey = datastore.newKeyFactory().setKind("User").newKey(username);
 		Entity user = null;

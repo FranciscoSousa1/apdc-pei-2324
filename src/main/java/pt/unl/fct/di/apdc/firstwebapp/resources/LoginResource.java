@@ -14,6 +14,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+
+import org.apache.commons.codec.digest.DigestUtils;
+
 import pt.unl.fct.di.apdc.firstwebapp.util.DataValidation;
 import pt.unl.fct.di.apdc.firstwebapp.util.LoginData;
 import pt.unl.fct.di.apdc.firstwebapp.Authentication.SignatureUtils;
@@ -49,7 +52,7 @@ public class LoginResource {
 			{
 				return Response.status(Status.NOT_ACCEPTABLE).build();
 			}
-			if (!data.password.equals(user.getString("password"))) {
+			if (!DigestUtils.sha512Hex(data.password).equals(user.getString("password"))) {
 				return Response.status(Status.FORBIDDEN).build();
 			}
 			String id = UUID.randomUUID().toString();
@@ -65,7 +68,7 @@ public class LoginResource {
 			NewCookie cookie = new NewCookie("session::apdc", value, "/", null, "comment", 60*60*2, false, true);
 			user = Entity.newBuilder(user).set("signature", signature).build();
 			datastore.put(user);
-			return Response.ok().cookie(cookie).build();
+			return Response.ok().entity("Login Succesful!").cookie(cookie).build();
 		}
 		return Response.status(Status.NOT_FOUND).entity("Username not valid.").build();
 	}

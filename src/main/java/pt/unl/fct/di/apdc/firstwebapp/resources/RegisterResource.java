@@ -11,6 +11,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.apache.commons.codec.digest.DigestUtils;
+
 import com.google.cloud.datastore.Datastore;
 import com.google.cloud.datastore.DatastoreOptions;
 import com.google.cloud.datastore.Key;
@@ -70,7 +72,7 @@ public class RegisterResource {
 		{
 			return Response.status(Status.FORBIDDEN).entity("You can't add more users.").build();
 		}
-		user = Entity.newBuilder(userKey).set("username", data.username).set("password", data.password)
+		user = Entity.newBuilder(userKey).set("username", data.username).set("password", DigestUtils.sha512Hex(data.password))
 				.set("password_changed", "false").set("email", data.email).set("name", data.name)
 				.set("telephone", data.telephone).set("visibility", data.visibility).set("ocupation", data.ocupation)
 				.set("workplace", data.workplace).set("address", data.address).set("postalCode", data.postalCode)
