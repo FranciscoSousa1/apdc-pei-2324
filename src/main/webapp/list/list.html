@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+<meta http-equiv="content-type"
+	content="application/xhtml+xml; charset=UTF-8" />
+<title>User Operations</title>
+</head>
+
+<body>
+	<a href = "https://clever-bit-416009.oa.r.appspot.com/rest/utils/profile">Go Back</a>
+	<img src="nova.png"
+		style="position: absolute; left: 975px; top: -40px;">
+	<h1 style="text-align: center;">List Users</h1>
+	<p id = "usersInfo"></p>
+</body>
+<script>
+fetch('https://clever-bit-416009.oa.r.appspot.com/rest/attribute/list')
+.then(response => response.text())
+.then(data => {
+		document.getElementById("usersInfo").innerHTML = data;
+})
+.catch(error => console.error('Fetch failed.', error))
+</script>
+<footer> Copyright: FCT NOVA 2023 </footer>
+</html>

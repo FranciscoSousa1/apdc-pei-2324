@@ -10,7 +10,8 @@
 	<img src="nova.png"
 		style="position: absolute; left: 975px; top: -40px;">
 	<h1 style="text-align: center;">Operations of User</h1>
-	<p id = "usernameValue">Cookie info: </p>
+	<p id = "cookie">Cookie info: </p>
+	<p id = "cookieInfo"></p>
 	<p>
 		<a href="/rest/utils/role">>Change Account Role</a>
 	</p>
@@ -37,7 +38,7 @@
 fetch('https://clever-bit-416009.oa.r.appspot.com/rest/cookie/info')
 .then(response => response.text())
 .then(data => {
-                document.getElementById("usernameValue").innerHTML = data;
+    			document.getElementById("cookieInfo").innerHTML = data;
             })
 .catch(error => console.error('Fetch failed.', error))
 </script>

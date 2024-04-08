@@ -51,6 +51,12 @@ public class RemoveResource {
 			cookie = null;
 			return Response.status(Status.NOT_ACCEPTABLE).entity("You have been deleted.").build();
 		}
+		if (user.getString("password_changed").equals("true"))
+		{
+			user = Entity.newBuilder(user).set("password_changed", "false").build();
+			datastore.put(user);
+			return Response.status(Status.NOT_ACCEPTABLE).entity("A user might have changed your password").build();
+		}
 		String id = UUID.randomUUID().toString();
 		long currentTime = System.currentTimeMillis();
 		String fields = username+"."+ id +"."+currentTime+"."+1000*60*60*2;
@@ -70,6 +76,10 @@ public class RemoveResource {
 		catch (DatastoreException e)
 		{
 			return Response.status(Status.NOT_ACCEPTABLE).entity("The user does not exist.").build();
+		}
+		if (!user.getString("signature").equals(valueSplit[valueSplit.length-1]))
+		{
+			return Response.status(Status.NOT_ACCEPTABLE).entity("The cookie has been changed mysteriously. Redirecting...").build();
 		}
 		if (user.getString("state").equals("INACTIVE"))
 		{

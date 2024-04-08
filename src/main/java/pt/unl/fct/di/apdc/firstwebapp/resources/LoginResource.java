@@ -49,7 +49,7 @@ public class LoginResource {
 			{
 				return Response.status(Status.NOT_ACCEPTABLE).build();
 			}
-			if (!data.password.equals(user.getString(DataValidation.PASSWORD))) {
+			if (!data.password.equals(user.getString("password"))) {
 				return Response.status(Status.FORBIDDEN).build();
 			}
 			String id = UUID.randomUUID().toString();
@@ -62,7 +62,9 @@ public class LoginResource {
 				return Response.status(Status.INTERNAL_SERVER_ERROR).entity("Error while signing token. See logs.").build();
 			}
 			String value =  fields + "." + signature;
-			NewCookie cookie = new NewCookie("session::apdc", value, "/", null, "comment", 1000*60*60*2, false, true);
+			NewCookie cookie = new NewCookie("session::apdc", value, "/", null, "comment", 60*60*2, false, true);
+			user = Entity.newBuilder(user).set("signature", signature).build();
+			datastore.put(user);
 			return Response.ok().cookie(cookie).build();
 		}
 		return Response.status(Status.NOT_FOUND).entity("Username not valid.").build();

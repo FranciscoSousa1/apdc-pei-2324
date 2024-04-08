@@ -22,7 +22,7 @@ import com.google.cloud.datastore.*;
 @Path("/logout")
 @Produces(MediaType.APPLICATION_JSON + ";charset=utf-8")
 public class LogoutResource {
-
+	
 	private final Datastore datastore = DatastoreOptions.getDefaultInstance().getService();
 
 	public LogoutResource() {
@@ -36,17 +36,37 @@ public class LogoutResource {
 		String value = cookie.getValue();
 		String[] valueSplit = value.split("\\.");
 		String username = valueSplit[0];
-		NewCookie theCookie = new NewCookie("session::apdc", cookie.getValue(), "/", null, "comment", 0, false, true);
 		Key userKey = datastore.newKeyFactory().setKind("User").newKey(username);
 		Entity user = null;
 		try {
 			user = datastore.get(userKey);
-		} catch (DatastoreException e) {
-
 		}
-		if (user == null) {
-
+		catch (DatastoreException e)
+		{
+			
 		}
-		return Response.ok().build();
+		if (System.currentTimeMillis() > (Long.valueOf(valueSplit[2]) + Long.valueOf(valueSplit[3]))) {
+			return Response.status(Status.NOT_ACCEPTABLE).entity("Cookie expired. Redirecting...").build();
+		}
+		if (user == null)
+		{
+			return Response.status(Status.NOT_ACCEPTABLE).entity("Cookie expired. Redirecting...").build();
+		}
+		if (user.getString("state").equals("INACTIVE"))
+		{
+			return Response.status(Status.NOT_ACCEPTABLE).entity("Someone has changed your state to inactive. Redirecting...").build();
+		}
+		if (user.getString("password_changed").equals("true"))
+		{
+			user = Entity.newBuilder(user).set("password_changed", "false").build();
+			datastore.put(user);
+			return Response.status(Status.NOT_ACCEPTABLE).entity("A user might have changed your password").build();
+		}
+		if (!user.getString("signature").equals(valueSplit[valueSplit.length-1]))
+		{
+			return Response.status(Status.NOT_ACCEPTABLE).entity("The cookie has been changed mysteriously. Redirecting...").build();
+		}
+		NewCookie theCookie = new NewCookie("session::apdc", null, "/", null, "comment", 0, false, true);
+		return Response.ok().cookie(theCookie).build();
 	}
 }
